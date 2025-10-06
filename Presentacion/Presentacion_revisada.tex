@@ -1,0 +1,203 @@
+% !TEX program = pdflatex
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% ====== Idioma y codificación ======
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% ====== Tema moderno ======
+\usetheme{metropolis}
+\definecolor{ceuBlue}{RGB}{0,56,168}
+\definecolor{ceuGreen}{RGB}{87,171,39}
+\setbeamercolor{structure}{fg=ceuBlue}
+\setbeamercolor{progress bar}{fg=ceuGreen,bg=ceuBlue!20}
+\setbeamercolor{frametitle}{bg=ceuBlue!6}
+
+% ====== Paquetes ======
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+
+% ====== Datos de la presentación ======
+\title{Introducción a la Inteligencia Artificial\newline\large (Visión y aprendizaje automático desde cero)}
+\author{Antonio Falcó \& Juan Pardo}
+\institute{Máster en IA y Fabricación Aditiva — ESET}
+\date{\today}
+
+\begin{document}
+
+% ========== Portada ==========
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\begin{frame}{Mapa del curso}
+  \tableofcontents
+\end{frame}
+
+% =============================================================
+\section{Objetivos y estructura}
+% =============================================================
+
+\begin{frame}{Objetivo del curso}
+  \begin{block}{Propósito}
+    Aprender los principios básicos de la inteligencia artificial a través de ejemplos visuales y prácticos, sin necesidad de conocimientos previos avanzados de matemáticas o programación.
+  \end{block}
+  \vspace{0.4em}
+  \textbf{Enfoque}: comprensión intuitiva, uso de herramientas accesibles (Python notebooks, Colab) y aprendizaje progresivo.
+\end{frame}
+
+\begin{frame}{Estructura general}
+  \begin{itemize}
+    \item Semana 1–2: ¿Qué es la IA? — ideas, historia y ejemplos.
+    \item Semana 3: Cómo ven las máquinas — imágenes y píxeles.
+    \item Semana 4: Aprender a clasificar — introducción a Machine Learning.
+    \item Semana 5–6: Redes neuronales con ejemplos sencillos.
+    \item Semana 7–8: Proyecto final guiado (clasificar imágenes o detectar objetos).
+  \end{itemize}
+\end{frame}
+
+% =============================================================
+\section{Qué es la Inteligencia Artificial}
+% =============================================================
+
+\begin{frame}{¿Qué entendemos por IA?}
+  \begin{itemize}
+    \item Sistemas que aprenden de los datos y toman decisiones.
+    \item Desde los primeros programas de ajedrez hasta los asistentes virtuales actuales.
+    \item La IA combina matemáticas, lógica y experiencia.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Ejemplos cotidianos de IA}
+  \begin{itemize}
+    \item Recomendaciones en redes sociales o plataformas de vídeo.
+    \item Asistentes de voz como Alexa o Siri.
+    \item Detección de defectos en productos fabricados.
+  \end{itemize}
+\end{frame}
+
+% =============================================================
+\section{Procesamiento de imágenes}
+% =============================================================
+
+\begin{frame}{Cómo ven las máquinas}
+  \begin{block}{Idea básica}
+    Una imagen es una cuadrícula de puntos (píxeles) con valores que representan el color o la luz.\newline
+    \textit{Ejemplo: una foto en blanco y negro se convierte en una tabla de números.}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Pequeños experimentos}
+  \begin{itemize}
+    \item Cargar y mostrar una imagen en Python (con Colab o Jupyter).
+    \item Cambiar brillo y contraste.
+    \item Convertir una imagen en blanco y negro.
+  \end{itemize}
+\end{frame}
+
+% =============================================================
+\section{Primeros pasos en Machine Learning}
+% =============================================================
+
+\begin{frame}{¿Qué significa aprender de los datos?}
+  \begin{block}{Ejemplo intuitivo}
+    Si un programa ve muchas imágenes de gatos y perros, puede aprender a diferenciarlos observando los patrones comunes.
+  \end{block}
+  \begin{itemize}
+    \item No se trata de memorizar, sino de generalizar.
+    \item Usaremos ejemplos visuales para entender cada concepto.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Tipos de aprendizaje}
+  \begin{itemize}
+    \item \textbf{Supervisado}: el programa aprende a partir de ejemplos con etiqueta (por ejemplo, “esto es un gato”).
+    \item \textbf{No supervisado}: busca patrones o grupos por sí solo.
+    \item \textbf{Por refuerzo}: aprende por prueba y error.
+  \end{itemize}
+\end{frame}
+
+% =============================================================
+\section{Redes neuronales desde cero}
+% =============================================================
+
+\begin{frame}{La idea de la neurona}
+  \begin{block}{Concepto visual}
+    Una neurona recibe información, hace un cálculo sencillo y decide una salida.\newline
+    En la práctica: suma de valores con diferentes pesos y una regla de decisión.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Perceptrón — el modelo más simple}
+  \centering
+  \begin{tikzpicture}[node distance=2cm,>=latex]
+    \node[circle,draw,fill=ceuGreen!30,minimum size=10mm] (n) at (0,0) {$f$};
+    \draw[-Latex] (-2,0.8)--(n) node[midway,above]{\small $x_1$};
+    \draw[-Latex] (-2,0)--(n) node[midway,above]{\small $x_2$};
+    \draw[-Latex] (-2,-0.8)--(n) node[midway,below]{\small $x_3$};
+    \draw[-Latex] (n)--(2,0) node[midway,above]{\small salida};
+  \end{tikzpicture}
+  \vspace{0.5em}
+  \begin{block}{Función}
+    $f(x) = w_1x_1 + w_2x_2 + w_3x_3 + b$  →  si el resultado es positivo, activa la salida.
+  \end{block}
+\end{frame}
+
+\begin{frame}{Visualizando una red sencilla}
+  \begin{itemize}
+    \item Varias neuronas conectadas forman una red.
+    \item Cada capa transforma los datos un poco más.
+    \item Las redes profundas son combinaciones de muchas capas.
+  \end{itemize}
+\end{frame}
+
+% =============================================================
+\section{Proyecto final}
+% =============================================================
+
+\begin{frame}{Proyecto: Clasificación de imágenes}
+  \begin{block}{Objetivo}
+    Entrenar un modelo sencillo que reconozca imágenes (por ejemplo, distinguir flores o tipos de piezas 3D).
+  \end{block}
+  \begin{itemize}
+    \item El proyecto se realiza paso a paso con guía.
+    \item Se proporcionan datos y ejemplos de código.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Evaluación}
+  \begin{itemize}
+    \item Comprensión y claridad en la explicación (40\%).
+    \item Corrección del proceso y resultados (40\%).
+    \item Participación y trabajo en equipo (20\%).
+  \end{itemize}
+  \vspace{0.5em}
+  \textbf{Importante:} no se evalúa la complejidad del código, sino la comprensión del proceso.
+\end{frame}
+
+% =============================================================
+\section{Cierre}
+% =============================================================
+
+\begin{frame}{Resumen}
+  \begin{itemize}
+    \item Hemos visto qué es la IA y cómo las máquinas aprenden de ejemplos.
+    \item Hemos aprendido a representar imágenes como datos.
+    \item Conocemos el funcionamiento básico de una red neuronal.
+    \item Próximo paso: aplicar todo en un pequeño proyecto.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Mensaje final}
+  \centering
+  \Large\textbf{La IA se aprende practicando y explorando.}\\[6pt]
+  \normalsize\textit{Comienza con curiosidad, sin miedo a equivocarte.}
+\end{frame}
+
+\end{document}
