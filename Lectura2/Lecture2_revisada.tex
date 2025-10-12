@@ -1,0 +1,444 @@
+\documentclass[10pt]{beamer}
+\usepackage{minted}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\title{Filtros, Convoluciones y Transformaciones B\'asicas}
+\author{Antonio Falc\'o y Juan Pardo}
+\institute{Introducci\'on a la Inteligencia Artificial}
+\date{Lecture 2}
+
+\begin{document}
+
+% =====================
+% Portada
+% =====================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =====================
+% Introducción general
+% =====================
+\begin{frame}{Objetivos de la sesi\'on}
+\begin{itemize}
+  \item Comprender qu\'e es un filtro y c\'omo act\'ua sobre una imagen.
+  \item Introducir la operaci\'on de convoluci\'on como base del procesado digital.
+  \item Explorar ejemplos de filtros: media, gaussiano y de bordes (Sobel).
+  \item Aplicar transformaciones geom\'etricas: traslaci\'on, rotaci\'on, escalado.
+  \item Conectar estas t\'ecnicas con el preprocesado para modelos de IA.
+\end{itemize}
+\end{frame}
+
+% =====================
+% Concepto de filtro
+% =====================
+\begin{frame}{\'Que es un filtro?}
+\begin{itemize}
+  \item Un filtro transforma una imagen modificando los valores de sus p\'ixeles.
+  \item Se define mediante una peque\~na matriz de pesos (\textbf{kernel}) que se aplica localmente.
+  \item Los filtros permiten:
+  \begin{itemize}
+    \item Suavizar (reducir ruido)
+    \item Resaltar bordes o texturas
+    \item Detectar formas
+  \end{itemize}
+\end{itemize}
+\vspace{3mm}
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={font=\scriptsize}]
+  \draw[step=0.6cm,gray!50,thin] (0,0) grid (3,3);
+  \draw[step=0.6cm,gray!50,thin] (4,0) grid (7,3);
+  \node at (1.5,3.3) {\textbf{Imagen}};
+  \node at (5.5,3.3) {\textbf{Resultado}};
+  \draw[-{Latex[length=3mm]}] (3.2,1.5) -- (3.8,1.5);
+  \node at (3.5,1.8) {Filtro 3$\times$3};
+\end{tikzpicture}
+\end{frame}
+
+% =====================
+% Convolución
+% =====================
+\begin{frame}{La operaci\'on de convoluci\'on}
+\begin{block}{Definici\'on discreta}
+Para una imagen $f$ y un kernel $k$ de tama\~no $(m,n)$:
+\[
+(g*f)(x,y) = \sum_{i=-a}^{a} \sum_{j=-b}^{b} f(x-i, y-j)\,k(i,j)
+\]
+\end{block}
+\begin{itemize}
+  \item Cada p\'ixel se reemplaza por una combinaci\'on ponderada de sus vecinos.
+  \item El resultado depende de la forma del kernel.
+\end{itemize}
+\vspace{2mm}
+\begin{block}{Ejemplo intuitivo}
+Un filtro de media 3$\times$3 reemplaza cada p\'ixel por la media de su vecindario inmediato.
+\end{block}
+\end{frame}
+
+% =====================
+% Ejemplo filtro de media
+% =====================
+\begin{frame}[fragile]{Filtro de media}
+\centering
+\begin{tabular}{c}
+$\displaystyle K = \frac{1}{9}\begin{bmatrix}1 & 1 & 1\\ 1 & 1 & 1\\ 1 & 1 & 1\end{bmatrix}$
+\end{tabular}
+\vspace{3mm}
+\begin{itemize}
+  \item Suaviza la imagen y reduce el ruido.
+  \item Pierde informaci\'on de bordes.
+\end{itemize}
+\vspace{2mm}
+\begin{block}{En Python}
+\scriptsize
+\begin{verbatim}
+K = np.ones((3,3))/9
+out = np.zeros_like(img[:,:,0], dtype=float)
+for i in range(1, H-1):
+    for j in range(1, W-1):
+        out[i,j] = np.sum(img[i-1:i+2, j-1:j+2,0] * K)
+plt.imshow(out, cmap='gray')
+\end{verbatim}
+\end{block}
+\end{frame}
+
+% =====================
+% Filtro gaussiano
+% =====================
+\begin{frame}{Filtro gaussiano}
+\begin{itemize}
+  \item Usa pesos mayores en el centro que en los bordes.
+  \item Produce un suavizado m\'as natural.
+\end{itemize}
+\centering
+$\displaystyle K = \frac{1}{16}\begin{bmatrix}1 & 2 & 1\\ 2 & 4 & 2\\ 1 & 2 & 1\end{bmatrix}$
+\vspace{3mm}
+\begin{block}{Idea visual}
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[step=0.6cm,gray!50,thin] (0,0) grid (1.8,1.8);
+  \fill[blue!20] (0.6,0.6) rectangle (1.2,1.2);
+  \node at (0.9,0.9) {4};
+  \node at (4.5,0.9) {Centro con mayor peso};
+\end{tikzpicture}
+\end{block}
+\end{frame}
+
+% =====================
+% Filtro gaussiano (1): fundamentos y parámetros
+% =====================
+\begin{frame}{Filtro gaussiano: fundamentos y par\'ametros}
+\begin{itemize}
+  \item \textbf{Definici\'on (2D continuo)}:
+  \[
+    G(x,y)=\frac{1}{2\pi\sigma^2}\,\exp\!\left(-\frac{x^2+y^2}{2\sigma^2}\right)
+  \]
+  \item \textbf{Kernel discreto}: muestrea $G$ en una rejilla de tama\~no impar $k\times k$.
+  \item \textbf{Regla pr\'actica de tama\~no}: $k \approx 2\lceil 3\sigma\rceil + 1$ \ (\emph{cubre $\pm 3\sigma$}).
+  \item \textbf{Normalizaci\'on}: reescala para que $\sum K=1$ (conserva brillo medio).
+  \item \textbf{Efecto}: reduce altas frecuencias (ruido), preserva estructuras grandes; \\
+        bordes se aten\'uan m\'as cuanto mayor es $\sigma$.
+  \item \textbf{Bordes (padding)}: \texttt{zero}, \texttt{edge} (replicar), \texttt{reflect} (recomendado para evitar halos).
+\end{itemize}
+\vspace{2mm}
+\begin{block}{Generaci\'on de kernel (idea)}
+\[
+K[i,j] \propto \exp\!\left(-\frac{i^2+j^2}{2\sigma^2}\right),\quad i,j\in\{-r,\dots,r\},\ r=\tfrac{k-1}{2};\quad K\leftarrow \frac{K}{\sum K}
+\]
+\end{block}
+\end{frame}
+
+% =====================
+% Filtro gaussiano (2): separabilidad e implementación
+% =====================
+\begin{frame}[fragile]
+\frametitle{Filtro gaussiano: separabilidad e implementaci\'on}
+\begin{itemize}
+  \item \textbf{Separabilidad}: $G(x,y)=g(x)\,g(y)$. Convolucionar en 1D \emph{horizontal} + \emph{vertical}.\\
+        \textbf{Coste}: de $\mathcal{O}(k^2)$ a $\mathcal{O}(2k)$ por p\'ixel.
+  \item \textbf{Variante LoG/DoG}: 
+    \begin{itemize}
+      \item LoG: $(\nabla^2 G)*f$ (bordes tras suavizado).
+      \item DoG: $G_{\sigma_1}*f - G_{\sigma_2}*f \approx \text{LoG}$ si $\sigma_2\!>\!\sigma_1$ (m\'as r\'apido).
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Filtro gaussiano: separabilidad e implementaci\'on}
+\vspace{1mm}
+{\scriptsize
+\begin{verbatim}
+import numpy as np
+
+# 1) Kernel 1D (separable)
+def gaussian1d(size=5, sigma=1.0):
+    r = size//2
+    ax = np.arange(-r, r+1, dtype=np.float32)
+    k = np.exp(-(ax**2)/(2*sigma**2))
+    k /= k.sum()
+    return k  # shape: (size,)
+\end{verbatim}
+}
+\begin{block}{Reglas r\'apidas}
+$\bullet$ Elige $k\!\approx\!6\sigma\!+\!1$;\quad $\bullet$ usa \texttt{reflect} para bordes;\quad
+$\bullet$ antes de Sobel, aplica gaussiano peque\~no para estabilizar bordes.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Filtro gaussiano: separabilidad e implementaci\'on}
+%\vspace{1mm}
+{\tiny
+\begin{verbatim}
+# 2) Convolucion separable (gris): primero filas, luego columnas
+def conv_gauss_separable(im, size=5, sigma=1.0, mode='reflect'):
+    k = gaussian1d(size, sigma)
+    # padding horizontal
+    H, W = im.shape
+    r = size//2
+    if mode == 'reflect':
+        pad = lambda a, p: np.pad(a, ((0,0),(p,p)), mode='reflect')
+    elif mode == 'edge':
+        pad = lambda a, p: np.pad(a, ((0,0),(p,p)), mode='edge')
+    else:
+        pad = lambda a, p: np.pad(a, ((0,0),(p,p)), mode='constant', constant_values=0)
+    # horizontal
+    tmp = np.zeros_like(im, dtype=np.float32)
+    pim = pad(im.astype(np.float32), r)
+    for y in range(H):
+        for x in range(W):
+            tmp[y, x] = np.sum(pim[y, x:x+size] * k)
+    # vertical (transpose para reutilizar l\'ogica)
+    if mode == 'reflect':
+        padv = lambda a, p: np.pad(a, ((p,p),(0,0)), mode='reflect')
+    elif mode == 'edge':
+        padv = lambda a, p: np.pad(a, ((p,p),(0,0)), mode='edge')
+    else:
+        padv = lambda a, p: np.pad(a, ((p,p),(0,0)), mode='constant', constant_values=0)
+    out = np.zeros_like(tmp, dtype=np.float32)
+    pt = padv(tmp, r)
+    for y in range(H):
+        for x in range(W):
+            out[y, x] = np.sum(pt[y:y+size, x] * k)
+    return out
+
+# 3) DoG (Difference of Gaussians)
+def dog(im, s1=1.0, s2=2.0, size=None):
+    if size is None:
+        size = 2*int(3*s2)+1  # cubre ±3*s2
+    g1 = conv_gauss_separable(im, size=size, sigma=s1)
+    g2 = conv_gauss_separable(im, size=size, sigma=s2)
+    return g1 - g2
+\end{verbatim}
+}
+\end{frame}
+
+
+
+% =====================
+% Filtros de borde (Sobel)
+% =====================
+\begin{frame}{Detecci\'on de bordes (Sobel)}
+\begin{columns}
+\column{0.5\textwidth}
+\begin{itemize}
+  \item Resalta los cambios abruptos de intensidad.
+  \item Filtro Sobel horizontal y vertical:
+\end{itemize}
+\centering
+$G_x = \begin{bmatrix}-1 & 0 & 1\\ -2 & 0 & 2\\ -1 & 0 & 1\end{bmatrix}$\\[2mm]
+$G_y = \begin{bmatrix}-1 & -2 & -1\\ 0 & 0 & 0\\ 1 & 2 & 1\end{bmatrix}$
+
+\column{0.5\textwidth}
+\begin{tikzpicture}[scale=0.9]
+  \draw[step=0.6cm,gray!50,thin] (0,0) grid (1.8,1.8);
+  \node at (0.9,2.1) {Borde};
+  \draw[-{Latex[length=3mm]}] (2,0.9) -- (3,0.9) node[right]{Direcci\'on $x$};
+\end{tikzpicture}
+\end{columns}
+\vspace{2mm}
+\begin{block}{Magnitud del gradiente}
+\( G = \sqrt{(f*G_x)^2 + (f*G_y)^2} \)
+\end{block}
+\end{frame}
+
+% =====================
+% Sobel detallado (1)
+% =====================
+\begin{frame}{Filtro de Sobel: concepto y f\'ormulas}
+\begin{itemize}
+  \item \textbf{Idea}: aproximar derivadas en $x$ e $y$ con kernels 3$\times$3 para medir cambios de intensidad.
+  \item Kernels de Sobel (horizontal/vertical):
+\end{itemize}
+\vspace{-2mm}
+\[
+G_x=\begin{bmatrix}-1 & 0 & 1\\[-2pt]-2 & 0 & 2\\[-2pt]-1 & 0 & 1\end{bmatrix},
+\qquad
+G_y=\begin{bmatrix}-1 & -2 & -1\\[-2pt]0 & 0 & 0\\[-2pt]1 & 2 & 1\end{bmatrix}
+\]
+\vspace{-4mm}
+\begin{itemize}
+  \item \textbf{Gradiente}: $g_x=f*G_x,\ g_y=f*G_y$;\quad \textbf{magnitud}: $\lVert\nabla f\rVert\approx \sqrt{g_x^2+g_y^2}$.
+  \item \textbf{Orientaci\'on}: $\theta=\mathrm{atan2}(g_y,g_x)$ (direcci\'on del borde).
+  \item \textbf{Normalizaci\'on}: reescala a $[0,255]$ para visualizar (evitar saturaci\'on).
+  \item \textbf{Bordes}: padding (ceros, replicar o reflejar) o ignorar el marco.
+  \item \textbf{Ruido}: suele precederse de un suavizado (p.\,ej.\ gaussiano 3$\times$3).
+\end{itemize}
+\end{frame}
+
+% =====================
+% Sobel detallado (2)
+% =====================
+\begin{frame}[fragile]
+\frametitle{Filtro de Sobel: implementaci\'on en Python}
+{\scriptsize
+\begin{verbatim}
+import numpy as np
+import matplotlib.pyplot as plt
+img = plt.imread('imagen.jpg')
+# Convertir a escala de grises si es RGB (sin tildes en comentarios)
+if img.ndim == 3:
+    img_gray = (0.299*img[...,0] + 0.587*img[...,1] + 0.114*img[...,2]).astype(np.float32)
+else:
+    img_gray = img.astype(np.float32)
+
+H, W = img_gray.shape
+Gx = np.array([[-1,0,1],[-2,0,2],[-1,0,1]], dtype=np.float32)
+Gy = np.array([[-1,-2,-1],[0,0,0],[1,2,1]], dtype=np.float32)
+gx = np.zeros_like(img_gray, dtype=np.float32)
+gy = np.zeros_like(img_gray, dtype=np.float32)
+
+for i in range(1, H-1):
+    for j in range(1, W-1):
+        region = img_gray[i-1:i+2, j-1:j+2]
+        gx[i,j] = np.sum(region * Gx)
+        gy[i,j] = np.sum(region * Gy)
+
+mag = np.sqrt(gx**2 + gy**2)
+# Normalización más segura con pequeño epsilon para evitar división por cero
+mag = (255 * (mag / (mag.max() + 1e-8))).astype(np.uint8)
+
+plt.figure(figsize=(10,4))
+plt.subplot(1,2,1); plt.imshow(img_gray, cmap='gray'); plt.title('Imagen original'); plt.axis('off')
+plt.subplot(1,2,2); plt.imshow(mag, cmap='gray'); plt.title('Magnitud del gradiente (Sobel)'); plt.axis('off')
+plt.tight_layout()
+plt.show()
+\end{verbatim}
+}
+\vspace{-2mm}
+\begin{block}{Para pensar}
+\begin{itemize}
+  \item Implementa $\lvert g_x\rvert+\lvert g_y\rvert$ como alternativa a $\sqrt{g_x^2+g_y^2}$ (más eficiente).
+  \item Modifica el tratamiento de bordes usando \texttt{np.pad} con modos \texttt{'reflect'} o \texttt{'constant'}.
+  \item Aplica un umbral para binarizar bordes (\texttt{mag > umbral}) y compara resultados.
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+
+% =====================
+% Transformaciones geométricas
+% =====================
+\begin{frame}{Transformaciones geom\'etricas}
+\begin{itemize}
+  \item Permiten cambiar la posici\'on o forma de la imagen.
+  \item Se basan en una funci\'on de mapeo $T(x,y) = (x',y')$.
+\end{itemize}
+\vspace{3mm}
+\begin{block}{Ejemplos}
+\begin{itemize}
+  \item \textbf{Traslaci\'on:} $x' = x + a,\ y' = y + b$
+  \item \textbf{Escalado:} $x' = s_x x,\ y' = s_y y$
+  \item \textbf{Rotaci\'on:} $\begin{bmatrix}x'\\y'\end{bmatrix} = R(\theta)\begin{bmatrix}x\\y\end{bmatrix}$
+\end{itemize}
+\end{block}
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \draw[->] (0,0) -- (2,0) node[right]{$x$};
+  \draw[->] (0,0) -- (0,2) node[above]{$y$};
+  \draw[fill=blue!20] (0.3,0.3) rectangle (1,1);
+  \draw[fill=red!20,rotate around={30:(0,0)}] (0.3,0.3) rectangle (1,1);
+  \node at (2.4,1.2) {Rotaci\'on 30$^\circ$};
+\end{tikzpicture}
+\end{frame}
+
+% =====================
+% Ejercicio guiado
+% =====================
+\begin{frame}[fragile]
+  \frametitle{Ejercicio guiado: aplicar un filtro}
+{\scriptsize
+\begin{verbatim}
+import numpy as np, matplotlib.pyplot as plt
+
+img = plt.imread('imagen.jpg')
+img_gray = img[:,:,0].astype(np.float32)  # canal 0 en float
+K = np.array([[-1,0,1],[-2,0,2],[-1,0,1]], dtype=np.float32)  # Sobel vertical (Gx)
+H,W = img_gray.shape
+out = np.zeros_like(img_gray)
+
+for i in range(1,H-1):
+    for j in range(1,W-1):
+        out[i,j] = np.sum(img_gray[i-1:i+2, j-1:j+2] * K)
+
+# normalización suave para visualizar
+m = out.max() if out.max()!=0 else 1.0
+plt.imshow((out/m), cmap='gray'); plt.axis('off'); plt.show()
+\end{verbatim}
+}
+\begin{block}{Para pensar}
+\begin{itemize}
+  \item ¿Qué cambia si usas el Sobel horizontal (Gy)?
+  \item ¿Cómo afecta aplicar antes un gaussiano 3×3?
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+% =====================
+% Conclusión
+% =====================
+\begin{frame}{Conclusiones}
+\begin{itemize}
+  \item Las convoluciones son la base de la visi\'on por computador.
+  \item Los filtros permiten extraer informaci\'on relevante de las im\'agenes.
+  \item Las transformaciones geom\'etricas ampl\'ian el repertorio de operaciones visuales.
+  \item Estos conceptos se reutilizan en redes convolucionales (CNNs).
+\end{itemize}
+\vfill
+\centering\textit{\small Antonio Falc\'o y Juan Pardo -- CEU UCH}
+\end{frame}
+
+% =====================
+% Slide final: conexión con la siguiente lectura
+% =====================
+\begin{frame}{De los filtros a las redes convolucionales}
+\centering
+\begin{tikzpicture}[node distance=1.4cm and 0.5cm, every node/.style={font=\scriptsize, align=center}]
+  \node[draw, fill=blue!10, minimum width=2.2cm, minimum height=0.9cm] (img) {\tiny Imagen de entrada};
+  \node[draw, fill=green!10, minimum width=2.2cm, minimum height=0.9cm, right=of img] (conv) {\tiny Filtros y Convoluciones};
+  \node[draw, fill=yellow!10, minimum width=2.2cm, minimum height=0.9cm, right=of conv] (feat) {\tiny Extracci\'on de\newline Caracter\'isticas};
+  \node[draw, fill=red!10, minimum width=2.2cm, minimum height=0.9cm, right=of feat] (cnn) {\tiny Red Convolucional\newline (CNN)};
+  \draw[-{Latex[length=3mm]}] (img) -- (conv);
+  \draw[-{Latex[length=3mm]}] (conv) -- (feat);
+  \draw[-{Latex[length=3mm]}] (feat) -- (cnn);
+\end{tikzpicture}
+\vspace{4mm}
+\begin{block}{Idea clave}
+Los mismos principios de los filtros se ampl\'ian en las CNNs, donde los pesos del kernel se aprenden autom\'aticamente para extraer caracter\'isticas relevantes.
+\end{block}
+\end{frame}
+
+\end{document}

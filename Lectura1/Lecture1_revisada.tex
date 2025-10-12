@@ -1,0 +1,204 @@
+\documentclass[10pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\title{Introducci\'on al Procesado de Imagen Digital}
+\author{Antonio Falc\'o y Juan Pardo}
+\institute{Introducci\'on a la Inteligencia Artificial}
+\date{Primera lectura del curso}
+
+\begin{document}
+
+% =====================
+% Portada
+% =====================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =====================
+% Nueva slide introductoria
+% =====================
+\begin{frame}{De p\'ixel a modelo de IA}
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 1.0cm, every node/.style={font=\scriptsize}]
+  % Imagen
+  \node[draw, fill=blue!10, minimum width=2cm, minimum height=1cm] (img) { \tiny\textbf{Imagen digital}};
+  % Matriz
+  \node[draw, fill=green!10, minimum width=2cm, minimum height=1cm, right=of img] (mat) { \tiny\textbf{Matriz de p\'ixeles}};
+  % Datos
+  \node[draw, fill=yellow!10, minimum width=2cm, minimum height=1cm, right=of mat] (data) { \tiny\textbf{Datos num\'ericos}};
+  % Modelo
+  \node[draw, fill=red!10, minimum width=2cm, minimum height=1cm, right=of data] (model) { \tiny\textbf{Modelo de IA}};
+
+  % Flechas
+  \draw[-{Latex[length=3mm]}] (img) -- (mat);
+  \draw[-{Latex[length=3mm]}] (mat) -- (data);
+  \draw[-{Latex[length=3mm]}] (data) -- (model);
+
+  % Iconos simb\'olicos
+  \node[below=0.2cm of img] { \tiny C\'amara / Sensor};
+  \node[below=0.2cm of mat] { \tiny Estructura bidimensional};
+  \node[below=0.2cm of data] { \tiny Normalizaci\'on y vectorizaci\'on};
+  \node[below=0.2cm of model] { \tiny Clasificaci\'on / Segmentaci\'on};
+\end{tikzpicture}
+\vspace{4mm}
+\begin{block}{Idea clave}
+Una imagen pasa de ser una representaci\'on visual a un conjunto de datos que puede aprender un modelo de inteligencia artificial.
+\end{block}
+\end{frame}
+
+% =====================
+% 1. Aprendizaje e IA
+% =====================
+\begin{frame}{El aprendizaje en inteligencia artificial}
+\begin{itemize}
+  \item El aprendizaje es el proceso mediante el cual un sistema mejora su desempe\~no a partir de la experiencia (datos).
+  \item En IA, se entrena un modelo matem\'atico alimentado con datos para realizar tareas: reconocer patrones, tomar decisiones o predecir resultados.
+  \item En el contexto del dise\~no de producto, el aprendizaje permite analizar im\'agenes, optimizar procesos o generar dise\~nos autom\'aticamente.
+\end{itemize}
+\vspace{3mm}
+\begin{block}{Esquema general}
+\centering
+Datos $\rightarrow$ Algoritmo de entrenamiento $\rightarrow$ Modelo entrenado $\rightarrow$ Predicciones
+\end{block}
+\end{frame}
+
+% =====================
+% 2. Procesado de imagen digital
+% =====================
+\begin{frame}{\'Que es una imagen digital?}
+\begin{itemize}
+  \item Una imagen digital es una representaci\'on num\'erica de la intensidad de luz capturada por un sensor o una c\'amara.
+  \item Cada elemento de la imagen se llama \textbf{p\'ixel} y almacena informaci\'on sobre el color o la intensidad.
+  \item Matem\'aticamente, una imagen se representa como una funci\'on
+  $$f: \{0,\ldots,W-1\}\times\{0,\ldots,H-1\}\to\mathbb{R}$$
+  donde $f(x,y)$ es la intensidad en la posici\'on $(x,y)$.
+\end{itemize}
+\end{frame}
+
+% =====================
+% Figura: C\'amara oscura
+% =====================
+\begin{frame}{Modelo de c\'amara oscura}
+\centering
+\begin{tikzpicture}[scale=0.9, every node/.style={font=\small}]
+  \draw[thick] (0,0) rectangle (5,3);
+  \filldraw[fill=gray!10] (0,0) rectangle (5,3);
+  \draw[fill=white] (0.2,1.5) circle (0.1);
+  \node[left] at (0,1.5) {Orificio};
+  \draw[-{Latex[length=3mm]}] (0.2,1.5) -- (2.5,1.8);
+  \draw[-{Latex[length=3mm]}] (0.2,1.5) -- (2.5,1.2);
+  \node at (4,1.5) {Pantalla};
+  \draw[dashed] (2.5,0) -- (2.5,3);
+\end{tikzpicture}
+\vspace{2mm}
+\begin{block}{Idea clave}
+La imagen es una proyecci\'on del mundo real en una superficie sensible a la luz.
+\end{block}
+\end{frame}
+
+% =====================
+% Representaci\'on num\'erica
+% =====================
+\begin{frame}{Representaci\'on num\'erica de una imagen}
+\begin{itemize}
+  \item Cada p\'ixel se asocia a un valor entero o real (seg\'un la profundidad de bits).
+  \item Im\'agenes en escala de grises: una sola matriz $f(x,y)$. \\
+  Im\'agenes en color: tres matrices (canales R, G, B).
+\end{itemize}
+\begin{block}{Ejemplo}
+Formatos comunes: RAW, BMP, JPEG, PNG.
+\end{block}
+\end{frame}
+
+% =====================
+% Figura: Canales RGB
+% =====================
+\begin{frame}{Canales de color RGB}
+\centering
+\begin{tikzpicture}[scale=0.9]
+  \fill[red!60] (0,0) rectangle (1,1);
+  \fill[green!60] (1.2,0) rectangle (2.2,1);
+  \fill[blue!60] (2.4,0) rectangle (3.4,1);
+  \node[below] at (0.5,0) {R};
+  \node[below] at (1.7,0) {G};
+  \node[below] at (2.9,0) {B};
+  \draw[thick, ->] (3.6,0.5) -- (4.6,0.5) node[right,xshift=15mm]{Combinaci\'on RGB};
+  \fill[red!60!green!60!blue!60] (5,0) rectangle (6,1);
+\end{tikzpicture}
+\vspace{2mm}
+\begin{block}{Observaci\'on}
+Cada canal almacena una componente del color; la combinaci\'on reconstruye la imagen original.
+\end{block}
+\end{frame}
+
+% =====================
+% 3. Ejemplos Python
+% =====================
+\begin{frame}[fragile]{Primeros pasos en Python}
+\begin{verbatim}
+import matplotlib.pyplot as plt
+import numpy as np
+
+img = plt.imread('imagen.jpg')
+print('Dimensiones:', img.shape)
+print('Tipo:', img.dtype)
+
+plt.imshow(img)
+plt.title('Imagen original')
+plt.axis('off')
+plt.show()
+\end{verbatim}
+\vspace{2mm}
+\begin{block}{Salida esperada}
+Una imagen cargada y mostrada en pantalla, junto con su tama\~no y tipo.
+\end{block}
+\end{frame}
+
+% =====================
+% Ejercicio guiado
+% =====================
+\begin{frame}[fragile]{Ejercicio guiado: transformaciones}
+\begin{verbatim}
+# Extraer una regi\'on (slicing)
+plt.imshow(img[100:400, 200:600])
+plt.title('Recorte de la imagen')
+plt.show()
+
+# Invertir verticalmente
+plt.imshow(img[::-1, :, :])
+plt.title('Imagen invertida verticalmente')
+plt.show()
+\end{verbatim}
+\begin{block}{Para pensar}
+\begin{itemize}
+  \item \textbf{¿Qu\'e ocurre si inviertes horizontalmente?}
+  \item \textbf{¿C\'omo podr\'ias mostrar solo el canal rojo?}
+\end{itemize}
+\end{block}
+\end{frame}
+
+% =====================
+% Cierre
+% =====================
+\begin{frame}{Conclusi\'on}
+\begin{itemize}
+  \item Las im\'agenes digitales son datos num\'ericos estructurados como matrices.
+  \item Comprender su representaci\'on es esencial antes de aplicar t\'ecnicas de IA o aprendizaje profundo.
+  \item En la siguiente sesi\'on: filtros, convoluciones y transformaciones b\'asicas.
+\end{itemize}
+\vfill
+\centering\textit{\small Antonio Falc\'o y Juan Pardo -- CEU UCH}
+\end{frame}
+
+\end{document}

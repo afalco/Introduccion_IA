@@ -1,0 +1,403 @@
+\documentclass[10pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, calc}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\title{Redes Convolucionales (CNN): Fundamentos y Pr\'actica}
+\author{Antonio Falc\'o y Juan Pardo}
+\institute{Introducci\'on a la Inteligencia Artificial}
+\date{Lecture 3}
+
+\begin{document}
+
+% =====================
+% Portada
+% =====================
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% =====================
+% Objetivos
+% =====================
+\begin{frame}{Objetivos de la sesi\'on}
+\begin{itemize}
+  \item Comprender la \textbf{capa de convoluci\'on}: kernels aprendidos, stride y padding.
+  \item Calcular \textbf{dimensiones de salida} y \textbf{n\'umero de par\'ametros}.
+  \item Introducir \textbf{activaciones} (ReLU), \textbf{pooling} y campo \textbf{receptivo}.
+  \item Conocer un bloque CNN t\'ipico y entrenarlo a alto nivel.
+\end{itemize}
+\end{frame}
+
+% =====================
+% Intuición: filtros aprendidos
+% =====================
+\begin{frame}{De filtros fijos a filtros aprendidos}
+\begin{columns}
+\column{0.55\textwidth}
+\begin{itemize}
+  \item En la Lecture 2 aplicamos \textbf{kernels fijos} (Sobel, Gauss).
+  \item En una CNN, los \textbf{pesos del kernel se aprenden} por el método de descenso de gradiente.
+  \item \textbf{Compartici\'on de pesos}: el mismo kernel se desliza por la imagen $\Rightarrow $ eficiencia y \emph{equivarianza traslacional}.
+\end{itemize}
+\column{0.45\textwidth}
+\centering
+\begin{tikzpicture}[every node/.style={font=\scriptsize}, node distance=0.8cm]
+  % Input patch and sliding kernel
+  \draw[step=0.25,gray!40,thin] (0,0) grid (2,2);
+  \node at (1,2.3) {\textbf{Entrada}};
+  \draw[fill=blue!10,draw=blue] (0.5,0.5) rectangle (1.25,1.25);
+  \node at (0.875,1.45) {Kernel 3x3};
+  \draw[-{Latex[length=2mm]}] (1.4,1) -- (1.7,1);
+  \draw[fill=red!10,draw=red] (2.6,0.6) rectangle (3.2,1.2);
+  \node at (2.9,1.45) {\textbf{Mapa}};
+\end{tikzpicture}
+\end{columns}
+\vspace{2mm}
+\begin{block}{Idea clave}
+Los kernels se optimizan para que la salida de la red \emph{discrimine mejor} las clases/targets del problema.
+\end{block}
+\end{frame}
+
+% =====================
+% Descenso del gradiente (1): idea y regla de actualización
+% =====================
+\begin{frame}{Descenso del gradiente: idea y regla de actualizaci\'on}
+\begin{itemize}
+  \item Dado un modelo $f(x;\theta)$ y una p\'erdida media
+  \[
+    \mathcal{L}(\theta)=\frac{1}{N}\sum_{i=1}^{N}\ell\!\big(f(x_i;\theta),\,y_i\big),
+  \]
+  buscamos minimizar $\mathcal{L}$ respecto a $\theta$.
+  \item \textbf{Regla b\'asica} (paso de aprendizaje $\eta>0$):
+  \[
+    \theta_{t+1}=\theta_t-\eta\,\nabla_{\theta}\mathcal{L}(\theta_t).
+  \]
+  \item Intuici\'on: nos movemos en la direcci\'on de m\'axima \emph{descenso} de la p\'erdida.
+  \item \textbf{Rol de $\eta$}: si es grande $\Rightarrow$ diverge/oscila; si es peque\~na $\Rightarrow$ lento.
+\end{itemize}
+\vspace{1mm}
+\begin{block}{Esquema del algoritmo}
+\small
+\begin{enumerate}
+  \item Inicializa $\theta_0$ (p.\,ej., aleatorio).
+  \item Para $t=0,1,\dots$ hasta criterio de parada:
+  \begin{enumerate}
+    \item Calcula $g_t=\nabla_{\theta}\mathcal{L}(\theta_t)$.
+    \item Actualiza $\theta_{t+1}=\theta_t-\eta\,g_t$.
+  \end{enumerate}
+\end{enumerate}
+\end{block}
+\end{frame}
+
+% =====================
+% Descenso del gradiente (2): variantes y trucos prácticos
+% =====================
+\begin{frame}{Variantes y trucos pr\'acticos}
+\scriptsize
+\begin{itemize}
+  \item \textbf{Mini‐batch / SGD}: usar un lote $B$ de tama\~no $|B|$
+  \[
+    g_t=\frac{1}{|B|}\sum_{(x_i,y_i)\in B}\nabla_{\theta}\ell\!\big(f(x_i;\theta_t),y_i\big).
+  \]
+  Reduce coste por iteraci\'on y el ruido puede ayudar a escapar de los \emph{puntos de silla}.
+  \item \textbf{Momentum} (cl\'asico):
+  \[
+    v_t=\mu v_{t-1}-\eta\,g_t,\qquad \theta_{t+1}=\theta_t+v_t,
+  \]
+  con $\mu\in[0,1)$; suaviza y acelera en valles alargados.
+  \item \textbf{Adam} (paso adaptativo):
+  \[
+    m_t=\beta_1 m_{t-1}+(1-\beta_1)g_t,\quad
+    v_t=\beta_2 v_{t-1}+(1-\beta_2)g_t^{\odot 2}
+  \]
+  \[
+    \hat m_t=\frac{m_t}{1-\beta_1^t},\ \hat v_t=\frac{v_t}{1-\beta_2^t},\ 
+    \theta_{t+1}=\theta_t-\eta\,\frac{\hat m_t}{\sqrt{\hat v_t}+\varepsilon}.
+  \]
+  \item \textbf{Programaci\'on de $\eta$}: \emph{step decay}, \emph{cosine}, \emph{warmup}.
+  \item \textbf{Regularizaci\'on}: weight decay ($\lambda\lVert\theta\rVert_2^2$), dropout, early stopping.
+  \item \textbf{Normalizaci\'on}: estandarizar entradas; Batch/Layer Norm estabilizan el entrenamiento.
+  \item \textbf{Criterios de parada}: no mejora en validaci\'on, gradiente peque\~no, l\'imite de \'epocas.
+\end{itemize}
+\vspace{1mm}
+\begin{block}{Reglas r\'apidas}
+Empieza con mini‐batch (p.\,ej., 32–256), Adam ($\eta\!\approx\!10^{-3}$), \emph{warmup} breve y \emph{early stopping}; ajusta $\eta$ antes que complicar el modelo.
+\end{block}
+\end{frame}
+
+% =====================
+% Capa conv: parámetros (previa)
+% =====================
+\begin{frame}{Capa de convoluci\'on: par\'ametros (previa)}
+\begin{itemize}
+  \item \textbf{Entrada} $X\in\mathbb{R}^{H\times W\times C_{in}}$: alto $H$, ancho $W$, canales $C_{in}$.
+  \item \textbf{Filtros/Kernels}: $C_{out}$ filtros de tama\~no $K_h\times K_w\times C_{in}$ (uno por mapa de salida).
+  \item \textbf{Stride} $S$: salto con el que el kernel se desplaza; $S{=}1$ recorre cada posici\'on, $S{>}1$ submuestrea.
+  \item \textbf{Padding} $P$: p\'ixeles extra alrededor de la entrada; $P{=}0$ (\emph{valid}), $P{=}\lfloor K/2\rfloor$ con $S{=}1$ (\emph{same}).
+  \item \textbf{Bias}: un t\'ermino por filtro (opcional) que desplaza la activaci\'on.
+  \item \textbf{Dilataci\'on} $D$ (opcional): separa los pesos del kernel; por defecto $D{=}1$.
+\end{itemize}
+\vspace{1mm}
+\begin{block}{Reglas r\'apidas}
+Suele usarse $K{=}3\times3$, $S{=}1$, $P{=}1$ para conservar tama\~no; tras cada \emph{pool} a menudo se duplica $C_{out}$.
+\end{block}
+\end{frame}
+
+
+% =====================
+% Capa conv: parámetros y dimensiones
+% =====================
+\begin{frame}{Capa de convoluci\'on: par\'ametros y dimensiones}
+\begin{itemize}
+  \item Entrada: $\;X\in\mathbb{R}^{H\times W\times C_{in}}$.
+  \item Kernels: $C_{out}$ filtros de tama\~no $K_h\times K_w\times C_{in}$.
+  \item \textbf{Par\'ametros}: $\;K_h K_w C_{in} C_{out} + C_{out}$ (bias).
+  \item \textbf{Salida}: $Y\in\mathbb{R}^{H_{out}\times W_{out}\times C_{out}}$ con
+  \[
+    H_{out} = \left\lfloor \frac{H + 2P - K_h}{S} \right\rfloor + 1,\quad
+    W_{out} = \left\lfloor \frac{W + 2P - K_w}{S} \right\rfloor + 1
+  \]
+\end{itemize}
+\vspace{2mm}
+\begin{block}{Ejemplo}
+Entrada $64\times 64\times 3$, Conv $3\times3$, $C_{out}{=}16$, $P{=}1$, $S{=}1$:
+$H_{out}{=}64,\;W_{out}{=}64$ y $\#\text{par\'ametros}=3\cdot3\cdot3\cdot16+16=448$.
+\end{block}
+\end{frame}
+
+% =====================
+% Activaciones y pooling
+% =====================
+\begin{frame}{Activaciones y pooling}
+\begin{columns}
+\column{0.5\textwidth}
+\textbf{Activaci\'on (ReLU)}
+\[
+\mathrm{ReLU}(z) = \max(0,z)
+\]
+\begin{itemize}
+  \item Introduce no linealidad; acelera convergencia.
+  \item Alternativas: LeakyReLU, GELU.
+\end{itemize}
+\column{0.5\textwidth}
+\textbf{Pooling}
+\begin{itemize}
+  \item Max/Average Pool $2\times2$ con stride 2 reducen resoluci\'on.
+  \item Ayuda a lograr \emph{invariancia} parcial a translaciones/ruido.
+\end{itemize}
+\end{columns}
+\vspace{2mm}
+\centering
+\begin{tikzpicture}[every node/.style={font=\scriptsize}]
+  % feature map before/after pool
+  \draw[step=0.25,gray!40,thin] (0,0) grid (2,2);
+  \node at (1,2.3) {Mapa de caracter\'isticas};
+  \draw[-{Latex[length=2mm]}] (2.2,1) -- (2.6,1);
+  \draw[step=0.5,gray!40,thin] (2.8,0) grid (3.8,1);
+  \node at (3.3,1.2) {Tras MaxPool 2x2};
+\end{tikzpicture}
+\end{frame}
+
+% =====================
+% Campo receptivo
+% =====================
+\begin{frame}{Campo receptivo}
+\begin{itemize}
+  \item El \textbf{campo receptivo} (RF) de una neurona es la regi\'on de entrada que puede influir en su valor.
+  \item Con stride 1: $\;RF_L = RF_{L-1} + (K_L - 1)$ con $RF_0=1$.
+  \item Con strides generales $S_i$: $\;RF_L = 1 + \sum_{\ell=1}^{L} (K_\ell - 1)\,\prod_{i=1}^{\ell-1} S_i$.
+\end{itemize}
+\vspace{2mm}
+\begin{block}{Ejemplo}
+Tres convoluciones 3$\times$3 con stride 1 $\Rightarrow\;RF=1+(3{-}1)+(3{-}1)+(3{-}1)=7$.
+\end{block}
+\end{frame}
+
+% =====================
+% Bloque CNN típico (diagrama)
+% =====================
+\begin{frame}{Bloque CNN t\'ipico}
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 0.5cm, every node/.style={font=\scriptsize, align=center}]
+  \node[draw, fill=blue!10, minimum width=1.2cm, minimum height=0.9cm] (in) {\tiny Entrada\\$H\times W\times C$};
+  \node[draw, fill=green!10, right=of in, minimum width=1.4cm, minimum height=0.9cm] (conv) {\tiny Conv $3\times3$\\$\times C_{out}$ + ReLU};
+  \node[draw, fill=yellow!10, right=of conv, minimum width=1.2cm, minimum height=0.9cm] (pool) {\tiny MaxPool $2\times2$};
+  \node[draw, fill=orange!10, right=of pool, minimum width=1.2cm, minimum height=0.9cm] (conv2) {\tiny Conv $3\times3$\\$\times C'_{out}$ + ReLU};
+  \node[draw, fill=red!10, right=of conv2, minimum width=2.2cm, minimum height=0.9cm] (head) {AvgPool/Flatten\\+ Linear};
+  \draw[-{Latex[length=3mm]}] (in) -- (conv);
+  \draw[-{Latex[length=3mm]}] (conv) -- (pool);
+  \draw[-{Latex[length=3mm]}] (pool) -- (conv2);
+  \draw[-{Latex[length=3mm]}] (conv2) -- (head);
+\end{tikzpicture}
+\vspace{2mm}
+\begin{itemize}
+  \item Este patr\'on (Conv+ReLU+Pool) se repite en arquitecturas cl\'asicas (LeNet, VGG).
+\end{itemize}
+\end{frame}
+
+% =====================
+% Cálculo de parámetros: ejemplo numérico
+% =====================
+\begin{frame}{C\'alculo de par\'ametros: ejemplo}
+\small
+\begin{block}{Modelo sencillo}
+Entrada $64\times64\times3$ \;\,$\rightarrow$\; Conv($3\times3$,16,P=1,S=1) \;\,$\rightarrow$\; MaxPool2 \;\,$\rightarrow$\; Conv($3\times3$,32,P=1,S=1) \;\,$\rightarrow$\; GAP \;\,$\rightarrow$\; Linear(10)
+\end{block}
+\begin{itemize}
+  \item Conv1: $3\cdot3\cdot3\cdot16+16=448$ par\'am.
+  \item Conv2: $3\cdot3\cdot16\cdot32+32=4{,}640$ par\'am.
+  \item Linear: $32\cdot10+10=330$ par\'am.
+\end{itemize}
+\vspace{1mm}
+\textbf{Total}: $448+4{,}640+330=5{,}418$ par\'ametros.
+\end{frame}
+
+% =====================
+% Entrenamiento (alto nivel)
+% =====================
+\begin{frame}{Entrenamiento (alto nivel)}
+\begin{itemize}
+  \item Objetivo: minimizar una \textbf{funci\'on de p\'erdida} (p.ej., cross-entropy) con descenso estoc\'astico.
+  \item Gradientes por \textbf{retropropagaci\'on} (backprop) y actualizaci\'on de pesos.
+  \item Pr\'acticas habituales: \textbf{data augmentation}, regularizaci\'on (dropout, weight decay), normalizaci\'on por lotes.
+\end{itemize}
+\end{frame}
+
+% =====================
+% Ejemplo en PyTorch (formas)
+% =====================
+\begin{frame}[fragile]
+\frametitle{Ejemplo r\'apido en PyTorch: inspecci\'on de formas}
+{\scriptsize
+\begin{verbatim}
+import torch, torch.nn as nn
+x = torch.randn(1, 3, 64, 64)  # (N,C,H,W)
+model = nn.Sequential(
+  nn.Conv2d(3, 16, kernel_size=3, padding=1), nn.ReLU(),
+  nn.MaxPool2d(2),
+  nn.Conv2d(16, 32, kernel_size=3, padding=1), nn.ReLU(),
+  nn.AdaptiveAvgPool2d((1,1)), nn.Flatten(),
+  nn.Linear(32, 10)
+)
+for i, layer in enumerate(model):
+    x = layer(x)
+    print(i, x.shape)  # evita tildes en comentarios
+\end{verbatim}
+}
+\vspace{-2mm}
+\begin{block}{Para pensar}
+\begin{itemize}
+  \item ¿C\'omo cambian las formas si eliminas el MaxPool o cambias $\text{padding}$/$\text{stride}$?
+  \item Sustituye AvgPool por Flatten directo: \textit{¿cu\'antos par\'ametros nuevos en la capa lineal?}
+\end{itemize}
+\end{block}
+\end{frame}
+
+% =====================
+% Ejemplo de arquitecturas: LeNet-5 y VGG-16 (resumen dimensional)
+% =====================
+\begin{frame}{Ejemplos de arquitecturas: LeNet-5 y VGG-16}
+\begin{columns}[t]
+\column{0.48\textwidth}
+\scriptsize
+\textbf{LeNet-5} (entrada 32$\times$32$\times$1)
+\begin{tabular}{l l}
+\hline
+Capa & Salida \\
+\hline
+Conv5x5, 6, S=1, P=0 & 28$\times$28$\times$6 \\
+Pool2x2, S=2         & 14$\times$14$\times$6 \\
+Conv5x5, 16          & 10$\times$10$\times$16 \\
+Pool2x2, S=2         & 5$\times$5$\times$16 \\
+Conv5x5, 120         & 1$\times$1$\times$120 \\
+FC 84                & 84 \\
+FC 10 (softmax)      & 10 \\
+\hline
+\end{tabular}
+\vspace{2mm}
+
+\column{0.52\textwidth}
+\scriptsize
+\textbf{VGG-16} (entrada 224$\times$224$\times$3)
+\begin{tabular}{l l}
+\hline
+Bloque & Salida \\
+\hline
+2$\times$Conv3x3, 64  & 224$\times$224$\times$64 \\
+MaxPool2x2            & 112$\times$112$\times$64 \\
+2$\times$Conv3x3, 128 & 112$\times$112$\times$128 \\
+MaxPool2x2            & 56$\times$56$\times$128 \\
+3$\times$Conv3x3, 256 & 56$\times$56$\times$256 \\
+MaxPool2x2            & 28$\times$28$\times$256 \\
+3$\times$Conv3x3, 512 & 28$\times$28$\times$512 \\
+MaxPool2x2            & 14$\times$14$\times$512 \\
+3$\times$Conv3x3, 512 & 14$\times$14$\times$512 \\
+MaxPool2x2            & 7$\times$7$\times$512 \\
+FC 4096 $\rightarrow$ FC 4096 $\rightarrow$ FC 1000 \\
+\hline
+\end{tabular}
+\end{columns}
+\vspace{2mm}
+\begin{block}{Notas}
+Conv3x3 con $P{=}1$ mantiene $H,W$; cada MaxPool2 reduce a la mitad. LeNet usa kernels grandes y pocas capas; VGG apila muchos Conv3x3 con más canales.
+\end{block}
+\end{frame}
+
+% =====================
+% Conclusiones y conexión
+% =====================
+\begin{frame}{Conclusiones}
+\begin{itemize}
+  \item Una CNN aprende kernels que extraen caracter\'isticas jer\'arquicas.
+  \item Dimensiones, par\'ametros y campo receptivo gu\'ian el dise\~no.
+  \item ReLU/Pooling introducen no linealidad y reducci\'on espacial.
+\end{itemize}
+\vspace{2mm}
+\begin{block}{Pr\'oximos pasos}
+Transfer Learning y Fine-Tuning en CNNs modernas (ResNet, MobileNet), y buenas pr\'acticas de entrenamiento.
+\end{block}
+\end{frame}
+
+
+% =====================
+% Transfer Learning: conexión con la siguiente lectura
+% =====================
+\begin{frame}{Transfer Learning con CNNs (conexión a la siguiente lectura)}
+\begin{itemize}
+  \item \textbf{Idea}: reutilizar pesos preentrenados (p.\,ej., en ImageNet) para acelerar y mejorar el rendimiento en tu tarea.
+  \item \textbf{Modos}: 
+    \begin{itemize}
+      \item \emph{Extractor fijo de características}: congelar bloques convolucionales y entrenar solo la \emph{cabeza} (clasificador).
+      \item \emph{Fine-tuning}: descongelar parcialmente y ajustar con una tasa de aprendizaje menor.
+    \end{itemize}
+  \item \textbf{Pasos típicos}: \textit{(1)} cargar pesos, \textit{(2)} reemplazar la capa final por $C$ clases, \textit{(3)} entrenar cabeza, \textit{(4)} afinar capas altas.
+  \item \textbf{Buenas prácticas}: data augmentation, LR menor en capas preentrenadas, early stopping; vigilar \emph{shift} de dominio.
+\end{itemize}
+\vspace{2mm}
+\centering
+\begin{tikzpicture}[node distance=1.2cm and 0.5cm, every node/.style={font=\scriptsize, align=center}]
+  \node[draw, fill=blue!10, minimum width=2.2cm, minimum height=0.9cm] (pt) {CNN preentrenada};
+  \node[draw, fill=yellow!10, right=of pt, minimum width=2.6cm, minimum height=0.9cm] (freeze) {Congelar\\bloques conv};
+  \node[draw, fill=green!10, right=of freeze, minimum width=2.6cm, minimum height=0.9cm] (head) {Nueva cabeza\\(FC / GAP+FC)};
+  \node[draw, fill=red!10, right=of head, minimum width=2.6cm, minimum height=0.9cm] (ft) {Fine-tuning\\LR menor};
+  \draw[-{Latex[length=3mm]}] (pt) -- (freeze);
+  \draw[-{Latex[length=3mm]}] (freeze) -- (head);
+  \draw[-{Latex[length=3mm]}] (head) -- (ft);
+\end{tikzpicture}
+\vspace{2mm}
+\begin{block}{Para la siguiente lectura}
+Veremos cómo cargar un backbone (p.\,ej., ResNet), reemplazar la cabeza y entrenar con \emph{transfer learning} y \emph{fine-tuning}.
+\end{block}
+\end{frame}
+
+
+\end{document}

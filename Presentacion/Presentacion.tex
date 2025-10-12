@@ -1,0 +1,326 @@
+\documentclass[10pt,handout]{beamer}
+
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc} 
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{beamerthemebars}
+%\usepackage{pythontex}
+\usepackage{amsmath}
+\usepackage{graphics}
+\usepackage{hyperref}
+\usepackage{multimedia}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{fpu}
+\usetikzlibrary{arrows.meta}
+\usetikzlibrary{angles,quotes}
+\usetikzlibrary{decorations.pathmorphing,patterns}
+\usetikzlibrary{datavisualization.formats.functions}
+%\usepackage[french]{babel}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.15}
+\usepackage{mathrsfs}
+\usetikzlibrary{arrows}
+\usepackage{latexsym} % Símbolos                        ı
+\usepackage{amsmath}
+\usepackage{amssymb}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{tikz-3dplot}
+\usepackage[outline]{contour} % glow around text
+\usepackage{xcolor}
+
+\colorlet{veccol}{green!50!black}
+\colorlet{projcol}{blue!70!black}
+\colorlet{myblue}{blue!80!black}
+\colorlet{myred}{red!90!black}
+\colorlet{mydarkblue}{blue!50!black}
+\tikzset{>=latex} % for LaTeX arrow head
+\tikzstyle{proj}=[projcol!80,line width=0.08] %very thin
+\tikzstyle{area}=[draw=veccol,fill=veccol!80,fill opacity=0.6]
+\tikzstyle{vector}=[-stealth,myblue,thick,line cap=round]
+\tikzstyle{unit vector}=[->,veccol,thick,line cap=round]
+\tikzstyle{dark unit vector}=[unit vector,veccol!70!black]
+\usetikzlibrary{angles,quotes} % for pic (angle labels)
+\contourlength{1.3pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain} % default
+  \newtheorem{thm}{Th\'eor\`eme}
+\theoremstyle{definition}
+  \newtheorem{defn}{D\'efinition}
+\theoremstyle{example}
+  \newtheorem{exmp}{Exemple}
+\theoremstyle{example}
+  \newtheorem{problema}{Probl\'eme}
+\theoremstyle{remark}
+  \newtheorem{respuesta}{R\'eponse}
+\theoremstyle{remark}
+  \newtheorem{rem}{Note}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\frenchdecimal{.}
+\useoutertheme{infolines}
+\usetheme{Marburg}
+\setbeamercovered{transparent}
+
+\title{Presentación del curso}
+\author{Antonio Falc\'o y Juan Pardo}
+\date{Introducción a la Inteligencia Artificial} 
+
+\begin{document}
+
+\frame[plain]{%
+\maketitle
+}
+
+%\begin{frame}
+%  \tableofcontents
+%\end{frame}
+
+%\section{Contexto}
+
+\frame[plain]{%
+  \frametitle{Objetivo del curso}
+  \framesubtitle{Comprender los fundamentos del procesado de imágenes digitales para su empleo en el diseño y la fabricación aditiva empleando técnicas de aprendizaje profundo.}
+  \begin{block}{Contenidos}
+    \begin{enumerate}
+      \item Procesamiento de imágenes digitales. \href{https://szeliski.org/Book}{\beamergotobutton{Site del libro de texto: \emph{Computer Vision: Algorithms and Applications, 2nd ed}}}
+      \item Aprendizaje profundo. (\emph{Deep Learning}). \href{https://udlbook.github.io/udlbook/}{\beamergotobutton{Site del libro de texto: \emph{Understanding Deep Learning}}}
+      \end{enumerate}
+  \end{block}
+}
+
+\frame[plain]{%
+  \frametitle{Introducción al procesado de imagen digital}  
+  \framesubtitle{Una breve revisión de la tećnicas de procesado de imagen digital y al tratamiento de imágenes digitales como datos numéricos.}
+  \begin{block}{Codificación de imágenes}
+    Las imágenes digitales se componen de píxeles, que son los elementos más pequeños de una imagen. Cada píxel tiene un valor numérico que representa su color o intensidad.
+  \end{block}
+  \begin{block}{Representación numérica de imágenes digitales}
+    Las imágenes digitales se pueden representar como matrices de píxeles, donde cada píxel tiene un valor numérico que representa su color o intensidad.
+\end{block}
+\begin{block}{Manipulación numérica de imágenes digitales}
+  Las imágenes digitales se pueden manipular utilizando técnicas de procesamiento de imágenes, como la convolución, la transformación de Fourier y la segmentación.
+\end{block}
+}
+
+
+
+\frame[plain]{%
+  \frametitle{Evolución histórica de la IA hasta la actualidad}
+  \framesubtitle{Una breve revisión de los avances en Inteligencia Artificial}
+  \begin{block}{Historia de la IA}
+\begin{itemize}
+\item Introducción a la historia de la inteligencia artificial.
+\item Desarrollo de la IA en diferentes momentos clave (1950-1990, 1990-2000, 2000-present).
+\item Análisis de los avances y desafíos en la IA.
+\item Aplicaciones actuales de la IA en diferentes sectores (salud, finanzas, educación, etc).
+\item Tendencias futuras en la IA y su impacto en la sociedad.
+\item Ética y responsabilidad en la IA.
+\end{itemize}
+  \end{block}
+}
+
+\frame[plain]{%
+  \frametitle{Introducción a Machine Learning}
+  %\framesubtitle{Una breve revisión de los avances en Inteligencia Artificial}
+  \begin{block}{Introducción a Machine Learning (ML)}
+\begin{itemize}
+\item Tipos de aprendizaje en ML (supervisado, no supervisado, reforzado).
+\item Métricas de evaluación de modelos de ML.
+\item Algoritmos de clasificación.
+\item Algoritmos de regresión.
+\item Algoritmos de clustering.
+\item Algoritmos de reducción de dimensionalidad.
+\item Algoritmos de selección de características.
+\item Algoritmos de reglas de asociación.
+\item Algoritmos de detección de anomalías.
+\item Algoritmos de recomendación.
+\item Algoritmos de aprendizaje por refuerzo.
+\item Metodología MLOPS (Machine Learning Operations).
+\item Principios de la IA generativa.
+\end{itemize}
+  \end{block}
+}
+
+
+\frame[plain]{%
+  \frametitle{La Neurona: conceptos y funcionamiento}
+  \framesubtitle{Un repaso sobre la neurona y sus procesos teóricos}
+ \begin{itemize}
+\item Introducción a la neurona y su función
+\item Procesos teóricos de la neurona (integración, disparo, aprendizaje)
+\item Cálculo de la neurona y su relación con los patrones de datos
+
+ \end{itemize}
+}
+
+\frame[plain]{%
+  \frametitle{ Perceptrón y Perceptrón Multicapa}
+  %\framesubtitle{Un repaso sobre la neurona y sus procesos teóricos}
+ \begin{itemize}
+\item Introducción a los perceptrones y sus componentes
+\item Funcionamiento del perceptron y su capacidad para clasificar datos
+\item Desarrollo de la percepción multicapa y su aplicación en problemas más complejos
+ \end{itemize}
+}
+
+
+\frame[plain]{%
+  \frametitle{Tipos de Redes Neuronales I}
+  %\framesubtitle{Una revisión de los diferentes tipos de redes neuronales y sus utilidades}
+\begin{itemize}
+\item Introducción a las redes neuronales artificiales (ANN)
+\begin{itemize}
+\item Ventajas y desventajas de las ANN
+\item Aplicaciones de las ANN (clasificación, regresión, clustering)
+\end{itemize}
+\item Perceptrón Multicapa
+\begin{itemize}
+\item Ventajas y desventajas del perceptron multicapa
+\item Aplicaciones del perceptron multicapa (clasificación, regresión, clustering)
+\end{itemize}
+\item Redes Neuronales Convolucionales (CNN)
+\begin{itemize}
+\item Introducción a las CNN y su aplicación en visión por computadora
+\item Ventajas y desventajas de las CNN
+\item Aplicaciones de las CNN (detención de objetos, segmentación de imágenes)
+\end{itemize}
+\item Redes Neuronales Recurrentes (RNN)
+\begin{itemize}
+\item Introducción a las RNN y su aplicación en problemas de tiempo serie
+\item Ventajas y desventajas de las RNN
+\item Aplicaciones de las RNN (predicción, generación de texto)
+\end{itemize}
+\end{itemize}
+}
+
+\frame[plain]{%
+  \frametitle{Tipos de Redes Neuronales II}
+  %\framesubtitle{Una revisión de los diferentes tipos de redes neuronales y sus utilidades}
+\begin{itemize}
+\item Redes Neuronales de Retropropagación (Backpropagation Neural Networks) 
+\begin{itemize}
+\item Introducción a la retropropagación y su aplicación en problemas de optimización.
+\item Ventajas y desventajas de la retropropagación.
+\item Aplicaciones de la retropropagación (optimización, generación de texto).
+\end{itemize}
+\item Redes Neuronales Generativas (GAN) 
+\begin{itemize}
+\item Introducción a las GAN y su aplicación en problemas de generación de datos
+\item Ventajas y desventajas de las GAN
+\item Aplicaciones de las GAN (generación de imágenes, generación de audio)
+\end{itemize}
+\end{itemize}
+}
+
+\frame[plain]{%
+  \frametitle{Tipos de Redes Neuronales III}
+  %\framesubtitle{Una revisión de los diferentes tipos de redes neuronales y sus utilidades}
+\begin{itemize}
+  \item Redes Neuronales de Crecimiento Competitivo (Growing Competitive Networks) 
+  \begin{itemize}
+  \item Introducción a las redes de crecimiento competitivo y su aplicación en problemas de aprendizaje automático.
+  \item Ventajas y desventajas de las redes de crecimiento competitivo.
+  \item Aplicaciones de las redes de crecimiento competitivo (aprendizaje automático, clustering).
+  \end{itemize}
+\item Redes Neuronales de Base Radial (RBF)  
+\begin{itemize}
+\item Introducción a las RBF y su aplicación en problemas de regresión y clasificación.
+\item Ventajas y desventajas de las RBF.
+\item Aplicaciones de las RBF (regresión, clasificación, clustering).
+\end{itemize}
+\item Transformers  
+\begin{itemize}
+\item Introducción a los transformers y su aplicación en problemas de procesamiento natural del lenguaje
+\item Ventajas y desventajas de los transformers
+\item Aplicaciones de los transformers (traducción automática, generación de texto)
+\end{itemize}
+\end{itemize}
+}
+
+\frame[plain]{%
+  \frametitle{Autoencoder y Autoencoder Variacional (VAE)}
+  %\framesubtitle{Una revisión general de los conceptos y técnicas en Inteligencia Artificial}
+  \begin{itemize}
+\item Introducción a los autoencoders y su aplicación en problemas de compressión de datos
+\item Ventajas y desventajas de los autoencoders
+\item Aplicaciones de los autoencoders (compressión de datos, generación de imágenes)
+\item Introducción a las VAE y su aplicación en problemas de generación de datos
+\item Ventajas y desventajas de las VAE
+\item Aplicaciones de las VAE (generación de imágenes, generación de audio)
+  \end{itemize}
+}
+
+\frame[plain]{%
+  \frametitle{Redes Neuronales Profundas (Deep Neural Networks, DNN)}
+  %\framesubtitle{Una revisión general de los conceptos y técnicas en Inteligencia Artificial}
+  \begin{itemize}
+\item Introducción a las redes neuronales profundas y su aplicación en problemas de aprendizaje automático
+\item Ventajas y desventajas de las redes neuronales profundas
+\item Aplicaciones de las redes neuronales profundas (aprendizaje automático, generación de texto)
+  \end{itemize}
+}
+
+\frame[plain]{%
+  \frametitle{Ejercicios y Proyectos}
+  %\framesubtitle{Una revisión general de los conceptos y técnicas en Inteligencia Artificial}
+  \begin{itemize}
+\item Desarrollo de ejercicios prácticos para consolidar los conceptos aprendidos en el curso
+\item Desarrollo de proyectos que aplican los conceptos aprendidos en el curso a problemas reales
+\end{itemize}
+}
+
+\end{document}
+
+\frame[plain]{%
+  \frametitle{Evaluación por proyectos}
+  \framesubtitle{Para evaluar el desempeño de los estudiantes en el curso de Inteligencia Artificial orientado al procesamiento de imágenes, se establecerá un sistema de evaluación por proyectos que cumplan con las siguientes condiciones:}
+  \begin{block}{Proyecto 1: Clasificación de Imágenes}
+  \begin{enumerate}
+    \item Los estudiantes presentarán el diseño de un proyecto que clasifique imágenes en diferentes categorías utilizando algoritmos de aprendizaje automático, como perceptrón multicapa o redes neuronales convolucionales.
+    \item El proyecto debe incluir la descripción del problema y el objetivo, así como una presentación detallada de los resultados y conclusiones.
+  \end{enumerate}
+
+  \end{block}
+}
+
+
+\frame[plain]{%
+  \frametitle{Evaluación por proyectos}
+  \framesubtitle{Para evaluar el desempeño de los estudiantes en el curso de Inteligencia Artificial orientado al procesamiento de imágenes, se establecerá un sistema de evaluación por proyectos que cumplan con las siguientes condiciones:}
+  \begin{block}{Proyecto 2: Reconocimiento de Objetos}
+    \begin{enumerate}
+      \item Los estudiantes deben desarrollar un proyecto que detecte y clasifique objetos en imágenes utilizando algoritmos de aprendizaje automático, como redes neuronales convolucionales o redes neuronales recurrentes.
+      \item El proyecto debe incluir la descripción del problema y el objetivo, así como una presentación detallada de los resultados y conclusiones.
+    \end{enumerate}
+  
+    \end{block}
+}
+
+\frame[plain]{%
+  \frametitle{Evaluación por proyectos}
+  \framesubtitle{Para evaluar el desempeño de los estudiantes en el curso de Inteligencia Artificial orientado al procesamiento de imágenes, se establecerá un sistema de evaluación por proyectos que cumplan con las siguientes condiciones:}
+  \begin{block}{Proyecto 3: Generación de Imágenes}
+    \begin{enumerate}
+      \item Los estudiantes deben desarrollar un proyecto que genere imágenes utilizando algoritmos de generación de datos sintéticos, como generadores adversarios o redes neuronales generativas.
+      \item El proyecto debe incluir la descripción del problema y el objetivo, así como una presentación detallada de los resultados y conclusiones.
+    \end{enumerate}
+  
+    \end{block}
+}
+
+\frame[plain]{%
+  \frametitle{Evaluación}
+  \framesubtitle{La evaluación se basará en los siguientes criterios:}
+  \begin{block}{Claridad y Coherencia del Proyecto (30\%)}
+    La claridad y coherencia del proyecto, incluyendo la descripción del problema y el objetivo.
+    \end{block}
+    \begin{block}{Aplicación de Algoritmos de Aprendizaje Automático (40\%)}
+      La aplicación efectiva de algoritmos de aprendizaje automático para resolver el problema propuesto.
+    \end{block}
+    \begin{block}{Resultados y Conclusiones (30\%)}
+      La presentación detallada de los resultados y conclusiones, incluyendo la interpretación de los resultados y sugerencias para futuras mejoras.
+\end{block}
+}
+\end{document}
